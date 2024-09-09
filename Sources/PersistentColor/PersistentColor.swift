@@ -64,11 +64,11 @@ extension PersistentColor: Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        red = try values.decode(Double.self, forKey: .red)
-        green = try values.decode(Double.self, forKey: .green)
-        blue = try values.decode(Double.self, forKey: .blue)
-        alpha = try values.decode(Double.self, forKey: .alpha)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        red = try container.decode(Double.self, forKey: .red)
+        green = try container.decode(Double.self, forKey: .green)
+        blue = try container.decode(Double.self, forKey: .blue)
+        alpha = try container.decode(Double.self, forKey: .alpha)
     }
 
     public func encode(to encoder: Encoder) throws {

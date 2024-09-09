@@ -28,6 +28,14 @@ public extension PersistentColor {
     }
 }
 
+@available(iOS 14.0, *)
+public extension PersistentColor {
+    /// A color that reflects the accent color of the system or app.
+    static var accentColor: PersistentColor {
+        .init(.accentColor)
+    }
+}
+
 @available(iOS 15.0, *)
 extension PersistentColor: ShapeStyle {
     public func resolve(in _: EnvironmentValues) -> some ShapeStyle {
@@ -41,7 +49,7 @@ private extension UIColor {
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        self.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        getRed(&red, green: &green, blue: &blue, alpha: &alpha)
         return (Double(red), Double(green), Double(blue), Double(alpha))
     }
 }
