@@ -10,43 +10,92 @@ import Testing
 
 @Suite
 final class PersistentColorTests {
-    @Test
-    func initFromHexValue() async throws {
-        #expect(PersistentColor("") == nil)
+    @Test(arguments: [
+        /// 8-digit lowercase hex (RRGGBBAA).
+        ("ff0000ff", (1.00, 0.00, 0.00, 1.00)),
+        ("00ff00ff", (0.00, 1.00, 0.00, 1.00)),
+        ("0000ffff", (0.00, 0.00, 1.00, 1.00)),
+        ("000000ff", (0.00, 0.00, 0.00, 1.00)),
+        ("ffffff80", (1.00, 1.00, 1.00, 0.50)),
 
-        let white = PersistentColor("ffffffff")
-        #expect(white?.red == 1 && white?.green == 1 && white?.blue == 1 && white?.alpha == 1)
+        /// 8-digit uppercase hex (RRGGBBAA).
+        ("FF80FFFF", (1.00, 0.50, 1.00, 1.00)),
 
-        let black = PersistentColor("000000ff")
-        #expect(black?.red == 0 && black?.green == 0 && black?.blue == 0 && black?.alpha == 1)
+        /// 6-digit lowercase hex (RRGGBB).
+        ("ff0000", (1.00, 0.00, 0.00, 1.00)),
+        ("00ff00", (0.00, 1.00, 0.00, 1.00)),
 
-        let red = PersistentColor("ff0000ff")
-        #expect(red?.red == 1 && red?.green == 0 && red?.blue == 0 && red?.alpha == 1)
+        /// 4-digit lowercase hex (RGBA).
+        ("f00f", (1.00, 0.00, 0.00, 1.00)),
+        ("0f0f", (0.00, 1.00, 0.00, 1.00)),
 
-        let green = PersistentColor("00ff00ff")
-        #expect(green?.red == 0 && green?.green == 1 && green?.blue == 0 && green?.alpha == 1)
+        /// 3-digit lowercase hex (RGB).
+        ("f00", (1.00, 0.00, 0.00, 1.00)),
+        ("0f0", (0.00, 1.00, 0.00, 1.00)),
 
-        let blue = PersistentColor("0000ffff")
-        #expect(blue?.red == 0 && blue?.green == 0 && blue?.blue == 1 && blue?.alpha == 1)
-
-        let transparent = PersistentColor("ffffff00")
-        #expect(transparent?.red == 1 && transparent?.green == 1 && transparent?.blue == 1 && transparent?.alpha == 0)
+        /// With # prefix.
+        ("#ff0000", (1.00, 0.00, 0.00, 1.00)),
+        ("#f00", (1.00, 0.00, 0.00, 1.00)),
+    ])
+    func initFromValidHexValue(
+        _ hex: String,
+        expected: (r: Double, g: Double, b: Double, a: Double)
+    ) async throws {
+        let color = PersistentColor(hex)
+        #expect(color != nil)
+        #expect(color?.red.rounded(toPlaces: 2) == expected.r)
+        #expect(color?.green.rounded(toPlaces: 2) == expected.g)
+        #expect(color?.blue.rounded(toPlaces: 2) == expected.b)
+        #expect(color?.alpha.rounded(toPlaces: 2) == expected.a)
     }
 
-    @Test
-    func hexValue() async throws {
-        let hexValues = [
-            "ffffffff",
-            "000000ff",
-            "ff0000ff",
-            "00ff00ff",
-            "0000ffff",
-            "ffffff00",
-        ]
+    @Test(arguments: [
+        /// Empty string.
+        "",
 
-        for hex in hexValues {
-            let color = PersistentColor(hex)
-            #expect(color?.hexValue == hex)
-        }
+        /// Too short.
+        "ff",
+
+        /// Invalid length.
+        "fffff",
+
+        /// Invalid character.
+        "fffffgff",
+
+        /// Too long.
+        "ffffffffff",
+
+        /// Invalid length with # prefix.
+        "#ff",
+
+        /// Non-hex characters.
+        "gg0000",
+
+        /// Too long.
+        "ff00ff00ff",
+    ])
+    func initFromInvalidHexValue(_ hex: String) async throws {
+        let color = PersistentColor(hex)
+        #expect(color == nil)
+    }
+
+    @Test(arguments: [
+        ((1.00, 0.00, 0.00, 1.00), "ff0000ff"),
+        ((0.00, 1.00, 0.00, 1.00), "00ff00ff"),
+        ((0.00, 0.00, 1.00, 1.00), "0000ffff"),
+        ((0.00, 0.00, 0.00, 1.00), "000000ff"),
+        ((1.00, 1.00, 1.00, 0.50), "ffffff7f"),
+    ])
+    func hexValueFromRGBA(
+        _ value: (r: Double, g: Double, b: Double, a: Double),
+        expected: String
+    ) async throws {
+        let color = PersistentColor(
+            red: value.r,
+            green: value.g,
+            blue: value.b,
+            alpha: value.a
+        )
+        #expect(color.hexValue == expected)
     }
 }

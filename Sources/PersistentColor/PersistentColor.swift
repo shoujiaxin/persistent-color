@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RegexBuilder
 
 @frozen
 public struct PersistentColor: Hashable, Sendable {
@@ -31,7 +32,12 @@ public struct PersistentColor: Hashable, Sendable {
         )
     }
 
-    public init(red: Double, green: Double, blue: Double, alpha: Double) {
+    public init(
+        red: Double,
+        green: Double,
+        blue: Double,
+        alpha: Double
+    ) {
         self.red = red
         self.green = green
         self.blue = blue
@@ -39,12 +45,41 @@ public struct PersistentColor: Hashable, Sendable {
     }
 
     public init?(_ hexValue: String) {
-        guard hexValue.count == 8 else {
+        /// Remove the # prefix if it exists.
+        let hex = hexValue.hasPrefix("#") ? String(hexValue.dropFirst()) : hexValue
+
+        /// Normalize the hex value to 8 characters.
+        var normalizedHex: String
+        switch hex.count {
+        case 3: /// RGB
+            normalizedHex = hex.map { "\($0)\($0)" }.joined() + "ff"
+        case 4: /// RGBA
+            normalizedHex = hex.map { "\($0)\($0)" }.joined()
+        case 6: /// RRGGBB
+            normalizedHex = hex + "ff"
+        case 8: /// RRGGBBAA
+            normalizedHex = hex
+        default:
+            return nil
+        }
+
+        /// Validate the hex value.
+        let hexRegex = Regex {
+            Anchor.startOfSubject
+
+            Repeat(count: 8) {
+                .hexDigit
+            }
+
+            Anchor.endOfSubject
+        }
+        guard normalizedHex.contains(hexRegex) else {
             return nil
         }
 
         var rgba: UInt64 = 0
-        Scanner(string: hexValue).scanHexInt64(&rgba)
+        Scanner(string: normalizedHex).scanHexInt64(&rgba)
+
         self.init(
             red: Double((rgba & 0xFF00_0000) >> 24) / 255,
             green: Double((rgba & 0x00FF_0000) >> 16) / 255,
