@@ -7,6 +7,20 @@
 
 import SwiftUI
 
+#if os(macOS)
+
+import AppKit
+
+typealias CrossPlatformColor = NSColor
+
+#else
+
+import UIKit
+
+typealias CrossPlatformColor = UIColor
+
+#endif
+
 public extension PersistentColor {
     var color: Color {
         get {
@@ -23,7 +37,7 @@ public extension PersistentColor {
     }
 
     init(_ color: Color) {
-        let rgba = UIColor(color).rgba
+        let rgba = CrossPlatformColor(color).rgba
         self.init(
             red: rgba.red,
             green: rgba.green,
@@ -58,7 +72,7 @@ extension PersistentColor: ShapeStyle {
     }
 }
 
-private extension UIColor {
+private extension CrossPlatformColor {
     var rgba: (red: Double, green: Double, blue: Double, alpha: Double) {
         var red: CGFloat = 0
         var green: CGFloat = 0
